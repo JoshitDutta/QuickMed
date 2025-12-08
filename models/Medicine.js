@@ -52,6 +52,12 @@ const MedicineSchema = new mongoose.Schema({
     isDeleted: {
         type: Boolean,
         default: false
+    },
+    user_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Staff',
+        required: true,
+        index: true
     }
 }, {
     timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }

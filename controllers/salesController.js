@@ -5,7 +5,7 @@ exports.getSales = async (req, res) => {
     try {
         const { startDate, endDate, medicineId } = req.query;
 
-        const query = {};
+        const query = { staff_id: req.user.id };
 
         if (startDate || endDate) {
             query.sale_date = {};

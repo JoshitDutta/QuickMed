@@ -16,9 +16,9 @@ exports.createOrder = async (req, res) => {
 
         // Simple sequential processing (Not atomic across all items, but works for standalone)
         for (const item of items) {
-            const medicine = await Medicine.findById(item.medicine_id);
+            const medicine = await Medicine.findOne({ _id: item.medicine_id, user_id: req.user.id });
             if (!medicine) {
-                return res.status(404).json({ message: `Medicine not found: ${item.medicine_id}` });
+                return res.status(404).json({ message: `Medicine not found or access denied: ${item.medicine_id}` });
             }
             if (medicine.isDeleted) {
                 return res.status(400).json({ message: `Medicine is not available: ${medicine.name}` });
@@ -90,7 +90,7 @@ exports.getOrders = async (req, res) => {
         const limitNum = parseInt(limit);
         const skip = (pageNum - 1) * limitNum;
 
-        let query = {};
+        let query = { staff_id: req.user.id };
 
         // Search by Customer Name or Order ID
         if (search) {
@@ -143,7 +143,7 @@ exports.updateOrderStatus = async (req, res) => {
         const { id } = req.params;
         const { payment_status } = req.body;
 
-        const order = await Order.findById(id);
+        const order = await Order.findOne({ _id: id, staff_id: req.user.id });
         if (!order) {
             return res.status(404).json({ message: 'Order not found' });
         }
@@ -173,7 +173,7 @@ exports.updateOrderStatus = async (req, res) => {
         if (payment_status === 'cancelled' && order.payment_status !== 'cancelled') {
             // Return items to stock
             for (const item of order.items) {
-                const medicine = await Medicine.findById(item.medicine_id);
+                const medicine = await Medicine.findOne({ _id: item.medicine_id, user_id: req.user.id });
                 if (medicine) {
                     medicine.quantity += item.quantity;
                     await medicine.save();

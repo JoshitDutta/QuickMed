@@ -17,7 +17,10 @@ exports.getMedicines = async (req, res) => {
             maxPrice
         } = req.query;
 
-        const query = { isDeleted: false };
+        const query = {
+            isDeleted: false,
+            user_id: req.user.id
+        };
 
         // Search
         if (search) {
@@ -96,7 +99,10 @@ exports.getMedicines = async (req, res) => {
 // POST /api/medicines
 exports.createMedicine = async (req, res) => {
     try {
-        const medicine = new Medicine(req.body);
+        const medicine = new Medicine({
+            ...req.body,
+            user_id: req.user.id
+        });
         await medicine.validate(); // Explicit check though save() does it too
         await medicine.save();
         res.status(201).json(medicine);
@@ -113,8 +119,8 @@ exports.createMedicine = async (req, res) => {
 exports.updateMedicine = async (req, res) => {
     try {
         const { id } = req.params;
-        const medicine = await Medicine.findByIdAndUpdate(
-            id,
+        const medicine = await Medicine.findOneAndUpdate(
+            { _id: id, user_id: req.user.id },
             req.body,
             { new: true, runValidators: true }
         );
@@ -137,8 +143,8 @@ exports.updateMedicine = async (req, res) => {
 exports.deleteMedicine = async (req, res) => {
     try {
         const { id } = req.params;
-        const medicine = await Medicine.findByIdAndUpdate(
-            id,
+        const medicine = await Medicine.findOneAndUpdate(
+            { _id: id, user_id: req.user.id },
             { isDeleted: true },
             { new: true }
         );

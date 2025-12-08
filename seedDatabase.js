@@ -109,6 +109,10 @@ const seedData = async () => {
             { name: 'Cough Syrup', category: 'First Aid', manufacturer: 'RespiCare', batch_number: 'RC2024020', quantity: 25, price: 5.00, purchase_price: 3.00, expiry_date: getRandomDate(28, 1), reorder_level: 20 }
         ];
 
+        // Add user_id to all medicines
+        lowStockMedicines.forEach(m => m.user_id = staffId);
+        expiringSoonMedicines.forEach(m => m.user_id = staffId);
+
         // NORMAL STOCK MEDICINES (10) - Good stock, not expiring soon
         const normalStockMedicines = [
             { name: 'Multivitamin Tablets', category: 'Supplement', manufacturer: 'VitaBoost', batch_number: 'VB2024021', quantity: 150, price: 10.00, purchase_price: 6.00, expiry_date: getRandomDate(365, 90), reorder_level: 30 },
@@ -122,6 +126,7 @@ const seedData = async () => {
             { name: 'Antiseptic Solution', category: 'First Aid', manufacturer: 'FirstAid Plus', batch_number: 'FA2024029', quantity: 140, price: 7.50, purchase_price: 4.50, expiry_date: getRandomDate(450, 100), reorder_level: 30 },
             { name: 'Bandage Roll', category: 'First Aid', manufacturer: 'FirstAid Plus', batch_number: 'FA2024030', quantity: 200, price: 2.50, purchase_price: 1.50, expiry_date: getRandomDate(500, 120), reorder_level: 50 }
         ];
+        normalStockMedicines.forEach(m => m.user_id = staffId);
 
         const allMedicines = [...lowStockMedicines, ...expiringSoonMedicines, ...normalStockMedicines];
         const createdMedicines = await Medicine.insertMany(allMedicines);

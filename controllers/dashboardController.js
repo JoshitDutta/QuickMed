@@ -5,12 +5,17 @@ const Order = require('../models/Order');
 exports.getStats = async (req, res) => {
     try {
         // 1. Total Medicines (exclude deleted)
-        const totalMedicines = await Medicine.countDocuments({ isDeleted: false });
+        // 1. Total Medicines (exclude deleted)
+        const totalMedicines = await Medicine.countDocuments({
+            isDeleted: false,
+            user_id: req.user.id
+        });
 
         // 2. Low Stock Count
         // Using $expr to compare quantity and reorder_level
         const lowStockCount = await Medicine.countDocuments({
             isDeleted: false,
+            user_id: req.user.id,
             $expr: { $lte: ['$quantity', '$reorder_level'] }
         });
 
@@ -19,6 +24,7 @@ exports.getStats = async (req, res) => {
         thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
         const expiringSoonCount = await Medicine.countDocuments({
             isDeleted: false,
+            user_id: req.user.id,
             expiry_date: { $gte: new Date(), $lte: thirtyDaysFromNow }
         });
 
@@ -30,7 +36,8 @@ exports.getStats = async (req, res) => {
 
         const matchToday = {
             createdAt: { $gte: startOfDay, $lte: endOfDay },
-            payment_status: 'paid' // Assuming only paid orders count as revenue
+            payment_status: 'paid',
+            staff_id: req.user.id
         };
 
         const todaysSalesData = await Order.aggregate([
@@ -46,7 +53,8 @@ exports.getStats = async (req, res) => {
 
         const matchMonth = {
             createdAt: { $gte: startOfMonth },
-            payment_status: 'paid'
+            payment_status: 'paid',
+            staff_id: req.user.id
         };
 
         const monthlyRevenueData = await Order.aggregate([
