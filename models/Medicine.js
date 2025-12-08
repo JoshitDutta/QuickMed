@@ -21,7 +21,6 @@ const MedicineSchema = new mongoose.Schema({
     batch_number: {
         type: String,
         required: true,
-        unique: true, // Assuming batch numbers are unique system-wide
         trim: true
     },
     quantity: {
@@ -50,11 +49,6 @@ const MedicineSchema = new mongoose.Schema({
         default: 10,
         min: 0
     },
-    supplier_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Supplier',
-        required: false // Sometimes medicines might be added before linking supplier
-    },
     isDeleted: {
         type: Boolean,
         default: false
@@ -63,8 +57,11 @@ const MedicineSchema = new mongoose.Schema({
     timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
 });
 
-// Text index for searching by name or category
+// Text index for searching by main fields
 MedicineSchema.index({ name: 'text', category: 'text' });
+
+// Partial unique index for batch_number (allows re-using batch if original is deleted)
+MedicineSchema.index({ batch_number: 1 }, { unique: true, partialFilterExpression: { isDeleted: false } });
 
 module.exports = mongoose.model('Medicine', MedicineSchema);
 

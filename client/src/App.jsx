@@ -4,7 +4,6 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Inventory from './pages/Inventory';
-import Suppliers from './pages/Suppliers';
 import Orders from './pages/Orders';
 import Billing from './pages/Billing';
 import PrivateRoute from './components/PrivateRoute';
@@ -24,7 +23,6 @@ function App() {
               <Route element={<PrivateRoute />}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/inventory" element={<Inventory />} />
-                <Route path="/suppliers" element={<Suppliers />} />
                 <Route path="/orders" element={<Orders />} />
                 <Route path="/billing" element={<Billing />} />
               </Route>

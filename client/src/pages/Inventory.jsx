@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams, useLocation } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import MedicineModal from '../components/MedicineModal';
 import api from '../api/axios';
+
 import { useToast } from '../context/ToastContext';
 import Skeleton from '../components/Skeleton';
+import ConfirmationModal from '../components/ConfirmationModal';
 import {
     Plus,
     Search,
@@ -26,8 +29,16 @@ const Inventory = () => {
     const [totalPages, setTotalPages] = useState(1);
     const [totalMedicines, setTotalMedicines] = useState(0);
     const [isModalOpen, setIsModalOpen] = useState(false);
+
     const [editingMedicine, setEditingMedicine] = useState(null);
+
+    // Delete Modal State
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [medicineToDelete, setMedicineToDelete] = useState(null);
+
     const toast = useToast();
+    const [searchParams] = useSearchParams();
+    const location = useLocation();
 
     // Filter States
     const [search, setSearch] = useState('');
@@ -45,13 +56,39 @@ const Inventory = () => {
     // Hardcoded categories (In real app, fetch from DB distinct categories)
     const ALL_CATEGORIES = ['Antibiotic', 'Painkiller', 'Supplement', 'First Aid', 'Cardiovascular', 'Antiviral', 'Skin Care'];
 
+    // Handle URL parameters on mount
+    useEffect(() => {
+        const filterLowStock = searchParams.get('filterLowStock');
+        const filterExpiring = searchParams.get('filterExpiring');
+        const searchQuery = searchParams.get('search');
+
+        if (filterLowStock === 'true') {
+            setShowLowStockOnly(true);
+            setIsFiltersOpen(true);
+        }
+
+        if (filterExpiring === 'true') {
+            // Set expiry filter for next 30 days
+            const today = new Date();
+            const thirtyDays = new Date();
+            thirtyDays.setDate(today.getDate() + 30);
+            setExpiryStart(today.toISOString().split('T')[0]);
+            setExpiryEnd(thirtyDays.toISOString().split('T')[0]);
+            setIsFiltersOpen(true);
+        }
+
+        if (searchQuery) {
+            setSearch(searchQuery);
+        }
+    }, [location.search]);
+
     // Load data with debounce on simple filters
     useEffect(() => {
         const timeoutId = setTimeout(() => {
             fetchMedicines();
         }, 500);
         return () => clearTimeout(timeoutId);
-    }, [search, page, sortBy, selectedCategories, showLowStockOnly]); // Simple triggers auto-fetch
+    }, [search, page, sortBy, selectedCategories, showLowStockOnly, expiryStart, expiryEnd]); // Simple triggers auto-fetch
 
     // Manual fetch for range inputs to avoid too many calls while typing
     const applyAdvancedFilters = () => {
@@ -133,16 +170,24 @@ const Inventory = () => {
         setIsModalOpen(true);
     };
 
-    const handleDeleteClick = async (id) => {
-        if (window.confirm('Delete this medicine?')) {
-            try {
-                await api.delete(`/medicines/${id}`);
-                toast.success("Medicine deleted successfully");
-                fetchMedicines();
-            } catch (error) {
-                console.error("Failed to delete", error);
-                toast.error("Failed to delete medicine");
-            }
+    const handleDeleteClick = (medicine) => {
+        setMedicineToDelete(medicine);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!medicineToDelete) return;
+
+        try {
+            await api.delete(`/medicines/${medicineToDelete._id}`);
+            toast.success("Medicine deleted successfully");
+            fetchMedicines();
+        } catch (error) {
+            console.error("Failed to delete", error);
+            toast.error("Failed to delete medicine");
+        } finally {
+            setIsDeleteModalOpen(false);
+            setMedicineToDelete(null);
         }
     };
 
@@ -375,7 +420,7 @@ const Inventory = () => {
                                                         <Edit2 size={16} />
                                                     </button>
                                                     <button
-                                                        onClick={() => handleDeleteClick(med._id)}
+                                                        onClick={() => handleDeleteClick(med)}
                                                         className="p-2 hover:bg-red-50 text-gray-400 hover:text-red-600 rounded-lg transition-colors"
                                                     >
                                                         <Trash2 size={16} />
@@ -420,6 +465,16 @@ const Inventory = () => {
                     onClose={() => setIsModalOpen(false)}
                     onSubmit={handleModalSubmit}
                     initialData={editingMedicine}
+                />
+
+                <ConfirmationModal
+                    isOpen={isDeleteModalOpen}
+                    onClose={() => setIsDeleteModalOpen(false)}
+                    onConfirm={handleConfirmDelete}
+                    title="Delete Medicine"
+                    message={`Are you sure you want to delete "${medicineToDelete?.name}"? This action cannot be undone.`}
+                    confirmText="Delete Medicine"
+                    isDangerous={true}
                 />
             </div>
         </div>

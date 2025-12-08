@@ -1,8 +1,11 @@
 import React from 'react';
 
-const StatsCard = ({ title, value, icon, gradient, trend }) => {
+const StatsCard = ({ title, value, icon, gradient, trend, onClick }) => {
     return (
-        <div className={`relative overflow-hidden bg-gradient-to-br ${gradient} p-6 rounded-2xl shadow-lg text-white transform transition-all duration-300 hover:scale-[1.02] hover:shadow-xl`}>
+        <div
+            onClick={onClick}
+            className={`relative overflow-hidden bg-gradient-to-br ${gradient} p-6 rounded-2xl shadow-lg text-white transform transition-all duration-300 hover:scale-[1.02] hover:shadow-xl ${onClick ? 'cursor-pointer' : ''}`}
+        >
             <div className="relative z-10 flex justify-between items-start">
                 <div>
                     <p className="text-indigo-100 text-sm font-medium mb-1 opacity-90">{title}</p>

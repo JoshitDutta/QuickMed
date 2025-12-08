@@ -83,6 +83,7 @@ const Dashboard = () => {
                             value={stats.totalMedicines}
                             icon={<Package size={24} className="text-white" />}
                             gradient="from-blue-500 to-cyan-500"
+                            onClick={() => navigate('/inventory')}
                         />
                         <StatsCard
                             title="Low Stock Alerts"
@@ -90,12 +91,14 @@ const Dashboard = () => {
                             icon={<AlertTriangle size={24} className="text-white" />}
                             gradient="from-orange-500 to-red-500"
                             trend="Action Needed"
+                            onClick={() => navigate('/inventory?filterLowStock=true')}
                         />
                         <StatsCard
                             title="Expiring Soon"
                             value={stats.expiringSoonCount}
                             icon={<CalendarClock size={24} className="text-white" />}
                             gradient="from-purple-500 to-pink-500"
+                            onClick={() => navigate('/inventory?filterExpiring=true')}
                         />
                         <StatsCard
                             title="Monthly Revenue"
@@ -103,6 +106,7 @@ const Dashboard = () => {
                             icon={<IndianRupee size={24} className="text-white" />}
                             gradient="from-emerald-500 to-teal-500"
                             trend="This Month"
+                            onClick={() => navigate('/orders?filterMonth=current')}
                         />
                     </div>
 

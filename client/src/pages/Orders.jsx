@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams, useLocation } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import api from '../api/axios';
@@ -31,6 +32,27 @@ const Orders = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const toast = useToast();
+    const [searchParams] = useSearchParams();
+    const location = useLocation();
+
+    // Handle URL parameters on mount
+    useEffect(() => {
+        const filterMonth = searchParams.get('filterMonth');
+        const searchQuery = searchParams.get('search');
+
+        if (filterMonth === 'current') {
+            // Set date range to current month
+            const now = new Date();
+            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+            const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+            setDateStart(firstDay.toISOString().split('T')[0]);
+            setDateEnd(lastDay.toISOString().split('T')[0]);
+        }
+
+        if (searchQuery) {
+            setSearch(searchQuery);
+        }
+    }, [location.search]);
 
     useEffect(() => {
         const timeout = setTimeout(() => fetchOrders(), 500);

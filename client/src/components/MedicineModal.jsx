@@ -2,6 +2,35 @@ import React, { useState, useEffect } from 'react';
 import { X, Save, AlertCircle, ShoppingBag, IndianRupee, Calendar, Boxes, Tag, Truck } from 'lucide-react';
 import api from '../api/axios';
 
+// Reusable Floating Label Component - MOVED OUTSIDE to prevent recreation
+const FloatingInput = ({ label, name, type = "text", icon: Icon, required = false, value, onChange, errors, ...props }) => (
+    <div className="relative group w-full">
+        {Icon && (
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                <Icon size={18} />
+            </div>
+        )}
+        <input
+            type={type}
+            name={name}
+            id={name}
+            value={value}
+            onChange={onChange}
+            className={`block w-full ${Icon ? 'pl-10' : 'pl-3'} pr-3 pb-2.5 pt-5 text-gray-900 bg-gray-50 border ${errors[name] ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-indigo-500'} rounded-xl appearance-none focus:outline-none focus:ring-0 peer transition-colors`}
+            placeholder=" "
+            required={required}
+            {...props}
+        />
+        <label
+            htmlFor={name}
+            className={`absolute text-sm duration-300 transform -translate-y-3 scale-75 top-3.5 z-10 origin-[0] ${Icon ? 'left-10' : 'left-3'} peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 ${errors[name] ? 'text-red-500' : 'text-gray-500 peer-focus:text-indigo-600'}`}
+        >
+            {label}
+        </label>
+        {errors[name] && <p className="absolute -bottom-4 left-0 text-[10px] text-red-500">{errors[name]}</p>}
+    </div>
+);
+
 const MedicineModal = ({ isOpen, onClose, onSubmit, initialData }) => {
     const [formData, setFormData] = useState({
         name: '',
@@ -12,18 +41,14 @@ const MedicineModal = ({ isOpen, onClose, onSubmit, initialData }) => {
         price: 0,
         purchase_price: 0,
         expiry_date: '',
-        reorder_level: 10,
-        supplier_id: ''
+        reorder_level: 10
     });
 
-    const [suppliers, setSuppliers] = useState([]);
+
     const [errors, setErrors] = useState({});
     const [profitMargin, setProfitMargin] = useState(null);
 
     useEffect(() => {
-        if (isOpen) {
-            fetchSuppliers();
-        }
         if (initialData) {
             const date = initialData.expiry_date ? new Date(initialData.expiry_date).toISOString().split('T')[0] : '';
             setFormData({ ...initialData, expiry_date: date });
@@ -37,8 +62,7 @@ const MedicineModal = ({ isOpen, onClose, onSubmit, initialData }) => {
                 price: 0,
                 purchase_price: 0,
                 expiry_date: '',
-                reorder_level: 10,
-                supplier_id: ''
+                reorder_level: 10
             });
         }
         setErrors({});
@@ -54,14 +78,7 @@ const MedicineModal = ({ isOpen, onClose, onSubmit, initialData }) => {
         }
     }, [formData.price, formData.purchase_price]);
 
-    const fetchSuppliers = async () => {
-        try {
-            const res = await api.get('/suppliers?limit=100');
-            setSuppliers(res.data.suppliers);
-        } catch (err) {
-            console.error("Failed to fetch suppliers for dropdown");
-        }
-    };
+
 
     const validate = () => {
         const newErrors = {};
@@ -87,35 +104,6 @@ const MedicineModal = ({ isOpen, onClose, onSubmit, initialData }) => {
     };
 
     if (!isOpen) return null;
-
-    // Reusable Floating Label Component
-    const FloatingInput = ({ label, name, type = "text", icon: Icon, required = false, ...props }) => (
-        <div className="relative group w-full">
-            {Icon && (
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                    <Icon size={18} />
-                </div>
-            )}
-            <input
-                type={type}
-                name={name}
-                id={name}
-                value={formData[name]}
-                onChange={handleChange}
-                className={`block w-full ${Icon ? 'pl-10' : 'pl-3'} pr-3 pb-2.5 pt-5 text-gray-900 bg-gray-50 border ${errors[name] ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-indigo-500'} rounded-xl appearance-none focus:outline-none focus:ring-0 peer transition-colors`}
-                placeholder=" "
-                required={required}
-                {...props}
-            />
-            <label
-                htmlFor={name}
-                className={`absolute text-sm duration-300 transform -translate-y-3 scale-75 top-3.5 z-10 origin-[0] ${Icon ? 'left-10' : 'left-3'} peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 ${errors[name] ? 'text-red-500' : 'text-gray-500 peer-focus:text-indigo-600'}`}
-            >
-                {label}
-            </label>
-            {errors[name] && <p className="absolute -bottom-4 left-0 text-[10px] text-red-500">{errors[name]}</p>}
-        </div>
-    );
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md transition-all">
@@ -145,41 +133,20 @@ const MedicineModal = ({ isOpen, onClose, onSubmit, initialData }) => {
                             <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Basic Information</h4>
                         </div>
 
-                        <FloatingInput label="Medicine Name" name="name" icon={ShoppingBag} required />
-                        <FloatingInput label="Category" name="category" icon={Tag} required />
-                        <FloatingInput label="Manufacturer" name="manufacturer" icon={Boxes} />
+                        <FloatingInput label="Medicine Name" name="name" icon={ShoppingBag} required value={formData.name} onChange={handleChange} errors={errors} />
+                        <FloatingInput label="Category" name="category" icon={Tag} required value={formData.category} onChange={handleChange} errors={errors} />
+                        <FloatingInput label="Manufacturer" name="manufacturer" icon={Boxes} value={formData.manufacturer} onChange={handleChange} errors={errors} />
 
-                        <div className="relative group w-full">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                                <Truck size={18} />
-                            </div>
-                            <select
-                                name="supplier_id"
-                                id="supplier_id"
-                                value={formData.supplier_id || ''}
-                                onChange={handleChange}
-                                className="block w-full pl-10 pr-3 pb-2.5 pt-5 text-gray-900 bg-gray-50 border border-gray-200 focus:border-indigo-500 rounded-xl appearance-none focus:outline-none focus:ring-0 peer transition-colors cursor-pointer"
-                            >
-                                <option value="" disabled hidden></option>
-                                <option value="">None</option>
-                                {suppliers.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
-                            </select>
-                            <label
-                                htmlFor="supplier_id"
-                                className="absolute text-sm duration-300 transform -translate-y-3 scale-75 top-3.5 z-10 origin-[0] left-10 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 text-gray-500 peer-focus:text-indigo-600"
-                            >
-                                Supplier
-                            </label>
-                        </div>
+
 
                         {/* Section: Inventory & Pricing */}
                         <div className="md:col-span-2 mt-2">
                             <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Inventory & Pricing</h4>
                         </div>
 
-                        <FloatingInput label="Batch Number" name="batch_number" />
-                        <FloatingInput label="Current Quantity" name="quantity" type="number" required />
-                        <FloatingInput label="Reorder Level" name="reorder_level" type="number" />
+                        <FloatingInput label="Batch Number" name="batch_number" value={formData.batch_number} onChange={handleChange} errors={errors} />
+                        <FloatingInput label="Current Quantity" name="quantity" type="number" required value={formData.quantity} onChange={handleChange} errors={errors} />
+                        <FloatingInput label="Reorder Level" name="reorder_level" type="number" value={formData.reorder_level} onChange={handleChange} errors={errors} />
 
                         {/* Date Picker using native input but styled */}
                         <div className="relative group w-full">
@@ -204,11 +171,11 @@ const MedicineModal = ({ isOpen, onClose, onSubmit, initialData }) => {
                         </div>
 
                         <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-8 items-start bg-gray-50/50 p-4 rounded-xl border border-gray-100">
-                            <FloatingInput label="Selling Price (₹)" name="price" type="number" step="0.01" icon={IndianRupee} required />
+                            <FloatingInput label="Selling Price (₹)" name="price" type="number" step="0.01" icon={IndianRupee} required value={formData.price} onChange={handleChange} errors={errors} />
 
                             <div className="flex gap-4">
                                 <div className="flex-1">
-                                    <FloatingInput label="Purchase Price (₹)" name="purchase_price" type="number" step="0.01" icon={IndianRupee} />
+                                    <FloatingInput label="Purchase Price (₹)" name="purchase_price" type="number" step="0.01" icon={IndianRupee} value={formData.purchase_price} onChange={handleChange} errors={errors} />
                                 </div>
                                 {/* Live Profit Margin Chip */}
                                 <div className="flex items-center justify-center min-w-[100px]">

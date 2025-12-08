@@ -25,7 +25,7 @@ const Sidebar = () => {
         { path: '/inventory', label: 'Inventory', icon: <Package size={20} /> },
         { path: '/orders', label: 'Orders', icon: <ShoppingCart size={20} /> },
         { path: '/billing', label: 'Billing', icon: <Receipt size={20} /> },
-        { path: '/suppliers', label: 'Suppliers', icon: <Truck size={20} /> },
+
     ];
 
     return (

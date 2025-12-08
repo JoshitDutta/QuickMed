@@ -11,7 +11,7 @@ const Header = ({ title }) => {
     const [alerts, setAlerts] = useState({ lowStock: [], expiring: [] });
     const notificationRef = useRef(null);
     const [searchQuery, setSearchQuery] = useState('');
-    const [searchResults, setSearchResults] = useState({ medicines: [], orders: [], suppliers: [] });
+    const [searchResults, setSearchResults] = useState({ medicines: [], orders: [] });
     const [isSearching, setIsSearching] = useState(false);
     const [showSearchDropdown, setShowSearchDropdown] = useState(false);
     const searchRef = useRef(null);
@@ -59,16 +59,14 @@ const Header = ({ title }) => {
                 setIsSearching(true);
                 setShowSearchDropdown(true);
                 try {
-                    const [medsRes, ordersRes, suppRes] = await Promise.all([
+                    const [medsRes, ordersRes] = await Promise.all([
                         api.get(`/medicines?search=${searchQuery}&limit=3`),
-                        api.get(`/orders?search=${searchQuery}&limit=3`),
-                        api.get(`/suppliers?search=${searchQuery}&limit=3`) // Assumes supplier API supports search
+                        api.get(`/orders?search=${searchQuery}&limit=3`)
                     ]);
 
                     setSearchResults({
                         medicines: medsRes.data.medicines || [],
-                        orders: ordersRes.data.orders || [],
-                        suppliers: suppRes.data.suppliers || []
+                        orders: ordersRes.data.orders || []
                     });
                 } catch (error) {
                     console.error("Global search failed", error);
@@ -76,7 +74,7 @@ const Header = ({ title }) => {
                     setIsSearching(false);
                 }
             } else {
-                setSearchResults({ medicines: [], orders: [], suppliers: [] });
+                setSearchResults({ medicines: [], orders: [] });
                 setShowSearchDropdown(false);
             }
         }, 300);
@@ -94,9 +92,6 @@ const Header = ({ title }) => {
                 break;
             case 'order':
                 navigate(`/orders?search=${item.order_id || item.customer_name}`);
-                break;
-            case 'supplier':
-                navigate(`/suppliers?search=${item.name}`); // Need to implement search on Suppliers page if not present
                 break;
             default:
                 break;
@@ -187,27 +182,6 @@ const Header = ({ title }) => {
                                         </div>
                                     )}
 
-                                    {/* Suppliers */}
-                                    {searchResults.suppliers.length > 0 && (
-                                        <div className="p-2 border-t border-gray-50">
-                                            <p className="px-2 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Suppliers</p>
-                                            {searchResults.suppliers.map(item => (
-                                                <div
-                                                    key={item._id}
-                                                    onClick={() => handleSearchResultClick('supplier', item)}
-                                                    className="p-2 hover:bg-gray-50 rounded-lg cursor-pointer flex items-center gap-2 group"
-                                                >
-                                                    <div className="bg-emerald-50 p-1.5 rounded-md text-emerald-600 group-hover:bg-emerald-100 transition-colors">
-                                                        <Truck size={14} />
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="text-xs font-medium text-gray-700 truncate">{item.name}</p>
-                                                        <p className="text-[10px] text-gray-400 truncate">{item.email}</p>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
 
                                     {/* No Results */}
                                     {Object.values(searchResults).every(arr => arr.length === 0) && (

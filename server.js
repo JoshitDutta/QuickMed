@@ -44,7 +44,6 @@ app.use(express.json());
 
 const authRoutes = require('./routes/authRoutes');
 const medicineRoutes = require('./routes/medicineRoutes');
-const supplierRoutes = require('./routes/supplierRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const salesRoutes = require('./routes/salesRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
@@ -52,7 +51,6 @@ const dashboardRoutes = require('./routes/dashboardRoutes');
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/medicines', medicineRoutes);
-app.use('/api/suppliers', supplierRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/sales', salesRoutes);
 app.use('/api/dashboard', dashboardRoutes);

@@ -77,8 +77,7 @@ exports.getMedicines = async (req, res) => {
         const medicines = await Medicine.find(query)
             .sort(sort)
             .skip(skip)
-            .limit(limitNum)
-            .populate('supplier_id', 'name');
+            .limit(limitNum);
 
         const total = await Medicine.countDocuments(query);
 
