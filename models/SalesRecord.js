@@ -1,13 +1,12 @@
 const mongoose = require('mongoose');
-
 const SalesRecordSchema = new mongoose.Schema({
     sale_id: {
-        type: String, // Or ObjectId if auto-generated, but user said sale_id
+        type: String, 
         required: true,
         unique: true
     },
     order_id: {
-        type: mongoose.Schema.Types.ObjectId, // Assuming linking to Order model
+        type: mongoose.Schema.Types.ObjectId, 
         ref: 'Order',
         required: true
     },
@@ -26,7 +25,7 @@ const SalesRecordSchema = new mongoose.Schema({
         required: true,
         min: 0
     },
-    total: { // Line total
+    total: { 
         type: Number,
         required: true,
         min: 0
@@ -42,9 +41,5 @@ const SalesRecordSchema = new mongoose.Schema({
         required: true
     }
 });
-
-// Index to quickly find sales by date range or for a specific medicine
-// sale_date is already indexed in the field definition
 SalesRecordSchema.index({ medicine_id: 1 });
-
 module.exports = mongoose.model('SalesRecord', SalesRecordSchema);

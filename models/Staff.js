@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-
 const StaffSchema = new mongoose.Schema({
     username: {
         type: String,
@@ -32,9 +31,6 @@ const StaffSchema = new mongoose.Schema({
         default: Date.now
     }
 }, {
-    // User specifically asked for created_at, didn't ask for updated_at explicitly but timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } is safer.
-    // However, I'll stick to their specific request for Staff: "created_at"
     timestamps: { createdAt: 'created_at', updatedAt: false }
 });
-
 module.exports = mongoose.model('Staff', StaffSchema);

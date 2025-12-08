@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-
 const OrderItemSchema = new mongoose.Schema({
     medicine_id: {
         type: mongoose.Schema.Types.ObjectId,
@@ -11,13 +10,12 @@ const OrderItemSchema = new mongoose.Schema({
         required: true,
         min: 1
     },
-    price: { // Unit price at the time of order
+    price: { 
         type: Number,
         required: true,
         min: 0
     }
 }, { _id: false });
-
 const OrderSchema = new mongoose.Schema({
     order_id: {
         type: String,
@@ -57,7 +55,6 @@ const OrderSchema = new mongoose.Schema({
         required: true
     }
 }, {
-    timestamps: true // Implicitly adds createdAt/updatedAt
+    timestamps: true 
 });
-
 module.exports = mongoose.model('Order', OrderSchema);

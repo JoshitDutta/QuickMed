@@ -4,7 +4,6 @@ import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import MedicineModal from '../components/MedicineModal';
 import api from '../api/axios';
-
 import { useToast } from '../context/ToastContext';
 import Skeleton from '../components/Skeleton';
 import ConfirmationModal from '../components/ConfirmationModal';
@@ -20,27 +19,19 @@ import {
     X,
     Check
 } from 'lucide-react';
-
 const Inventory = () => {
-    // Basic State
     const [medicines, setMedicines] = useState([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalMedicines, setTotalMedicines] = useState(0);
     const [isModalOpen, setIsModalOpen] = useState(false);
-
     const [editingMedicine, setEditingMedicine] = useState(null);
-
-    // Delete Modal State
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [medicineToDelete, setMedicineToDelete] = useState(null);
-
     const toast = useToast();
     const [searchParams] = useSearchParams();
     const location = useLocation();
-
-    // Filter States
     const [search, setSearch] = useState('');
     const [selectedCategories, setSelectedCategories] = useState([]);
     const [sortBy, setSortBy] = useState('');
@@ -49,26 +40,17 @@ const Inventory = () => {
     const [expiryStart, setExpiryStart] = useState('');
     const [expiryEnd, setExpiryEnd] = useState('');
     const [showLowStockOnly, setShowLowStockOnly] = useState(false);
-
-    // UI States
     const [isFiltersOpen, setIsFiltersOpen] = useState(false);
-
-    // Hardcoded categories (In real app, fetch from DB distinct categories)
     const ALL_CATEGORIES = ['Antibiotic', 'Painkiller', 'Supplement', 'First Aid', 'Cardiovascular', 'Antiviral', 'Skin Care'];
-
-    // Handle URL parameters on mount
     useEffect(() => {
         const filterLowStock = searchParams.get('filterLowStock');
         const filterExpiring = searchParams.get('filterExpiring');
         const searchQuery = searchParams.get('search');
-
         if (filterLowStock === 'true') {
             setShowLowStockOnly(true);
             setIsFiltersOpen(true);
         }
-
         if (filterExpiring === 'true') {
-            // Set expiry filter for next 30 days
             const today = new Date();
             const thirtyDays = new Date();
             thirtyDays.setDate(today.getDate() + 30);
@@ -76,27 +58,21 @@ const Inventory = () => {
             setExpiryEnd(thirtyDays.toISOString().split('T')[0]);
             setIsFiltersOpen(true);
         }
-
         if (searchQuery) {
             setSearch(searchQuery);
         }
     }, [location.search]);
-
-    // Load data with debounce on simple filters
     useEffect(() => {
         const timeoutId = setTimeout(() => {
             fetchMedicines();
         }, 500);
         return () => clearTimeout(timeoutId);
-    }, [search, page, sortBy, selectedCategories, showLowStockOnly, expiryStart, expiryEnd]); // Simple triggers auto-fetch
-
-    // Manual fetch for range inputs to avoid too many calls while typing
+    }, [search, page, sortBy, selectedCategories, showLowStockOnly, expiryStart, expiryEnd]); 
     const applyAdvancedFilters = () => {
         setPage(1);
         fetchMedicines();
         setIsFiltersOpen(false);
     };
-
     const fetchMedicines = async () => {
         setLoading(true);
         try {
@@ -106,14 +82,12 @@ const Inventory = () => {
                 search: search || undefined,
                 filterLowStock: showLowStockOnly ? 'true' : undefined
             };
-
             if (sortBy) params.sortBy = sortBy;
             if (selectedCategories.length > 0) params.categories = selectedCategories.join(',');
             if (minPrice) params.minPrice = minPrice;
             if (maxPrice) params.maxPrice = maxPrice;
             if (expiryStart) params.expiryStart = expiryStart;
             if (expiryEnd) params.expiryEnd = expiryEnd;
-
             const res = await api.get(`/medicines`, { params });
             setMedicines(res.data.medicines);
             setTotalPages(res.data.totalPages);
@@ -125,17 +99,14 @@ const Inventory = () => {
             setLoading(false);
         }
     };
-
     const toggleCategory = (cat) => {
         setSelectedCategories(prev =>
             prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
         );
         setPage(1);
     };
-
     const handleExportCSV = () => {
         if (medicines.length === 0) return toast.info("No data to export");
-
         const headers = ["Name", "Category", "Batch", "Quantity", "Price", "Expiry"];
         const rows = medicines.map(m => [
             m.name,
@@ -145,11 +116,9 @@ const Inventory = () => {
             m.price,
             new Date(m.expiry_date).toLocaleDateString()
         ]);
-
         let csvContent = "data:text/csv;charset=utf-8,"
             + headers.join(",") + "\n"
             + rows.map(e => e.join(",")).join("\n");
-
         const encodedUri = encodeURI(csvContent);
         const link = document.createElement("a");
         link.setAttribute("href", encodedUri);
@@ -159,25 +128,20 @@ const Inventory = () => {
         document.body.removeChild(link);
         toast.success("Inventory exported successfully");
     };
-
     const handleAddClick = () => {
         setEditingMedicine(null);
         setIsModalOpen(true);
     };
-
     const handleEditClick = (medicine) => {
         setEditingMedicine(medicine);
         setIsModalOpen(true);
     };
-
     const handleDeleteClick = (medicine) => {
         setMedicineToDelete(medicine);
         setIsDeleteModalOpen(true);
     };
-
     const handleConfirmDelete = async () => {
         if (!medicineToDelete) return;
-
         try {
             await api.delete(`/medicines/${medicineToDelete._id}`);
             toast.success("Medicine deleted successfully");
@@ -190,7 +154,6 @@ const Inventory = () => {
             setMedicineToDelete(null);
         }
     };
-
     const handleModalSubmit = async (data) => {
         try {
             if (editingMedicine) {
@@ -207,7 +170,6 @@ const Inventory = () => {
             toast.error("Failed to save medicine");
         }
     };
-
     const LoadingSkeleton = () => (
         <>
             {[...Array(5)].map((_, i) => (
@@ -223,18 +185,15 @@ const Inventory = () => {
             ))}
         </>
     );
-
     return (
         <div className="flex bg-gray-50 min-h-screen">
             <Sidebar />
             <div className="ml-64 flex-1 flex flex-col">
                 <Header title="Inventory Management" />
-
                 <div className="p-8 flex-1">
-                    {/* Toolbar */}
+                    {}
                     <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 mb-6 flex flex-col gap-4">
-
-                        {/* Top Row: Search & Actions */}
+                        {}
                         <div className="flex justify-between items-center flex-wrap gap-4">
                             <div className="relative flex-1 min-w-[250px]">
                                 <Search className="absolute left-3 top-3 text-gray-400" size={20} />
@@ -245,7 +204,6 @@ const Inventory = () => {
                                     className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-2.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition-all"
                                 />
                             </div>
-
                             <div className="flex gap-3">
                                 <button
                                     onClick={() => setIsFiltersOpen(!isFiltersOpen)}
@@ -253,14 +211,12 @@ const Inventory = () => {
                                 >
                                     <Filter size={18} /> Filters
                                 </button>
-
                                 <button
                                     onClick={handleExportCSV}
                                     className="px-4 py-2.5 border border-gray-200 text-gray-600 rounded-xl hover:bg-gray-50 transition-colors flex items-center gap-2"
                                 >
                                     <Download size={18} /> Export
                                 </button>
-
                                 <button
                                     onClick={handleAddClick}
                                     className="bg-indigo-600 text-white px-5 py-2.5 rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200 font-medium flex items-center gap-2"
@@ -269,11 +225,10 @@ const Inventory = () => {
                                 </button>
                             </div>
                         </div>
-
-                        {/* Filter Panel (Collapsible) */}
+                        {}
                         <div className={`overflow-hidden transition-all duration-300 ${isFiltersOpen ? 'max-h-[500px] opacity-100 pt-4 border-t border-gray-100' : 'max-h-0 opacity-0'}`}>
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                                {/* Categories */}
+                                {}
                                 <div className="md:col-span-4">
                                     <p className="text-xs font-bold text-gray-400 uppercase mb-2">Categories</p>
                                     <div className="flex flex-wrap gap-2">
@@ -288,8 +243,7 @@ const Inventory = () => {
                                         ))}
                                     </div>
                                 </div>
-
-                                {/* Price Range */}
+                                {}
                                 <div>
                                     <p className="text-xs font-bold text-gray-400 uppercase mb-2">Price Range</p>
                                     <div className="flex gap-2 items-center">
@@ -306,8 +260,7 @@ const Inventory = () => {
                                         />
                                     </div>
                                 </div>
-
-                                {/* Date Range */}
+                                {}
                                 <div>
                                     <p className="text-xs font-bold text-gray-400 uppercase mb-2">Expiry Date</p>
                                     <div className="flex flex-col gap-2">
@@ -323,8 +276,7 @@ const Inventory = () => {
                                         />
                                     </div>
                                 </div>
-
-                                {/* Checks & Sort */}
+                                {}
                                 <div className="flex flex-col gap-4">
                                     <div
                                         onClick={() => setShowLowStockOnly(!showLowStockOnly)}
@@ -335,7 +287,6 @@ const Inventory = () => {
                                         </div>
                                         <span className="text-sm font-medium text-gray-700">Show Low Stock Only</span>
                                     </div>
-
                                     <select
                                         value={sortBy}
                                         onChange={(e) => setSortBy(e.target.value)}
@@ -347,7 +298,6 @@ const Inventory = () => {
                                         <option value="price:desc">Price: High to Low</option>
                                     </select>
                                 </div>
-
                                 <div className="flex items-end">
                                     <button
                                         onClick={applyAdvancedFilters}
@@ -359,8 +309,7 @@ const Inventory = () => {
                             </div>
                         </div>
                     </div>
-
-                    {/* Table */}
+                    {}
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                         <table className="w-full text-left">
                             <thead className="bg-gray-50/50 border-b border-gray-100">
@@ -437,8 +386,7 @@ const Inventory = () => {
                             </tbody>
                         </table>
                     </div>
-
-                    {/* Simple Pagination */}
+                    {}
                     <div className="mt-6 flex justify-between items-center text-sm text-gray-500">
                         <p>Showing Page {page} of {totalPages} ({totalMedicines} items)</p>
                         <div className="flex gap-2">
@@ -459,14 +407,12 @@ const Inventory = () => {
                         </div>
                     </div>
                 </div>
-
                 <MedicineModal
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
                     onSubmit={handleModalSubmit}
                     initialData={editingMedicine}
                 />
-
                 <ConfirmationModal
                     isOpen={isDeleteModalOpen}
                     onClose={() => setIsDeleteModalOpen(false)}
@@ -480,5 +426,4 @@ const Inventory = () => {
         </div>
     );
 };
-
 export default Inventory;

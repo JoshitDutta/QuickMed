@@ -1,6 +1,4 @@
 const Medicine = require('../models/Medicine');
-
-// GET /api/medicines
 exports.getMedicines = async (req, res) => {
     try {
         const {
@@ -12,58 +10,39 @@ exports.getMedicines = async (req, res) => {
             expiryStart,
             expiryEnd,
             category,
-            categories, // Multi-select support
+            categories, 
             minPrice,
             maxPrice
         } = req.query;
-
         const query = {
             isDeleted: false,
             user_id: req.user.id
         };
-
-        // Search
         if (search) {
             query.$or = [
                 { name: { $regex: search, $options: 'i' } },
                 { category: { $regex: search, $options: 'i' } }
             ];
         }
-
-        // Filter by Category (Single or Multi)
         if (categories) {
             const catArray = categories.split(',').filter(c => c.trim() !== '');
             if (catArray.length > 0) query.category = { $in: catArray };
         } else if (category) {
             query.category = category;
         }
-
-        // Filter by Price Range
         if (minPrice || maxPrice) {
             query.price = {};
             if (minPrice) query.price.$gte = Number(minPrice);
             if (maxPrice) query.price.$lte = Number(maxPrice);
         }
-
-        // Filter Low Stock
         if (filterLowStock === 'true') {
-            // In MongoDB we can compare fields using $expr, but simple way is harder if reorder_level varies per doc.
-            // Lucky for us, reorder_level IS a field.
-            // query['$expr'] = { $lte: ['$quantity', '$reorder_level'] };
-            // However, typical request might just want simple threshold.
-            // But prompt says "low_stock" alert logic.
-            // Let's use $expr to compare quantity vs reorder_level.
             query.$expr = { $lte: ['$quantity', '$reorder_level'] };
         }
-
-        // Filter Expiry Range
         if (expiryStart || expiryEnd) {
             query.expiry_date = {};
             if (expiryStart) query.expiry_date.$gte = new Date(expiryStart);
             if (expiryEnd) query.expiry_date.$lte = new Date(expiryEnd);
         }
-
-        // Sorting
         let sort = { created_at: -1 };
         if (sortBy) {
             const parts = sortBy.split(':');
@@ -71,19 +50,14 @@ exports.getMedicines = async (req, res) => {
             const order = parts[1] === 'desc' ? -1 : 1;
             sort = { [field]: order };
         }
-
-        // Pagination
         const pageNum = parseInt(page);
         const limitNum = parseInt(limit);
         const skip = (pageNum - 1) * limitNum;
-
         const medicines = await Medicine.find(query)
             .sort(sort)
             .skip(skip)
             .limit(limitNum);
-
         const total = await Medicine.countDocuments(query);
-
         res.json({
             medicines,
             currentPage: pageNum,
@@ -95,15 +69,13 @@ exports.getMedicines = async (req, res) => {
         res.status(500).json({ message: 'Server error fetching medicines' });
     }
 };
-
-// POST /api/medicines
 exports.createMedicine = async (req, res) => {
     try {
         const medicine = new Medicine({
             ...req.body,
             user_id: req.user.id
         });
-        await medicine.validate(); // Explicit check though save() does it too
+        await medicine.validate(); 
         await medicine.save();
         res.status(201).json(medicine);
     } catch (err) {
@@ -114,8 +86,6 @@ exports.createMedicine = async (req, res) => {
         res.status(500).json({ message: 'Server error creating medicine' });
     }
 };
-
-// PUT /api/medicines/:id
 exports.updateMedicine = async (req, res) => {
     try {
         const { id } = req.params;
@@ -124,11 +94,9 @@ exports.updateMedicine = async (req, res) => {
             req.body,
             { new: true, runValidators: true }
         );
-
         if (!medicine) {
             return res.status(404).json({ message: 'Medicine not found' });
         }
-
         res.json(medicine);
     } catch (err) {
         console.error(err);
@@ -138,8 +106,6 @@ exports.updateMedicine = async (req, res) => {
         res.status(500).json({ message: 'Server error updating medicine' });
     }
 };
-
-// DELETE /api/medicines/:id
 exports.deleteMedicine = async (req, res) => {
     try {
         const { id } = req.params;
@@ -148,11 +114,9 @@ exports.deleteMedicine = async (req, res) => {
             { isDeleted: true },
             { new: true }
         );
-
         if (!medicine) {
             return res.status(404).json({ message: 'Medicine not found' });
         }
-
         res.json({ message: 'Medicine deleted successfully' });
     } catch (err) {
         console.error(err);

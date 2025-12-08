@@ -1,5 +1,4 @@
 import React from 'react';
-
 const StatsCard = ({ title, value, icon, gradient, trend, onClick }) => {
     return (
         <div
@@ -20,12 +19,10 @@ const StatsCard = ({ title, value, icon, gradient, trend, onClick }) => {
                     {icon}
                 </div>
             </div>
-
-            {/* Abstract Background Shapes */}
+            {}
             <div className="absolute -bottom-8 -right-8 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
             <div className="absolute top-0 right-1/2 w-24 h-24 bg-white/5 rounded-full blur-xl"></div>
         </div>
     );
 };
-
 export default StatsCard;

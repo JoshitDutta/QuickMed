@@ -1,11 +1,10 @@
 const mongoose = require('mongoose');
-
 const MedicineSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
         trim: true,
-        index: true // Simple index will be useful, but text index is better for search
+        index: true 
     },
     category: {
         type: String,
@@ -62,12 +61,6 @@ const MedicineSchema = new mongoose.Schema({
 }, {
     timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
 });
-
-// Text index for searching by main fields
 MedicineSchema.index({ name: 'text', category: 'text' });
-
-// Partial unique index for batch_number (allows re-using batch if original is deleted)
 MedicineSchema.index({ batch_number: 1 }, { unique: true, partialFilterExpression: { isDeleted: false } });
-
 module.exports = mongoose.model('Medicine', MedicineSchema);
-

@@ -16,27 +16,19 @@ import {
     Clock
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
 const Billing = () => {
-    // Search State
     const [query, setQuery] = useState('');
     const [suggestions, setSuggestions] = useState([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const searchRef = useRef(null);
-
-    // Cart State
     const [cart, setCart] = useState([]);
     const [customerName, setCustomerName] = useState('');
     const [customerContact, setCustomerContact] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('cash');
-
-    // UI State
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const toast = useToast();
     const navigate = useNavigate();
-
-    // Close suggestions on click outside
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (searchRef.current && !searchRef.current.contains(event.target)) {
@@ -46,8 +38,6 @@ const Billing = () => {
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
-
-    // Fetch Suggestions Debounced
     useEffect(() => {
         const fetchMedicines = async () => {
             if (query.length < 2) {
@@ -55,7 +45,6 @@ const Billing = () => {
                 return;
             }
             try {
-                // Using the existing search param
                 const res = await api.get(`/medicines?search=${query}&limit=5`);
                 setSuggestions(res.data.medicines);
                 setShowSuggestions(true);
@@ -63,24 +52,19 @@ const Billing = () => {
                 console.error("Failed to search", error);
             }
         };
-
         const timeoutId = setTimeout(fetchMedicines, 300);
         return () => clearTimeout(timeoutId);
     }, [query]);
-
     const addToCart = (medicine) => {
         if (medicine.quantity <= 0) {
             toast.error("Medicine out of stock!");
             return;
         }
-
-        // Check expiry warning
         const daysToExpiry = Math.ceil((new Date(medicine.expiry_date) - new Date()) / (1000 * 60 * 60 * 24));
         if (daysToExpiry < 0) {
             toast.error("Cannot add expired medicine!");
             return;
         }
-
         const existing = cart.find(item => item._id === medicine._id);
         if (existing) {
             if (existing.buyQty + 1 > medicine.quantity) {
@@ -99,7 +83,6 @@ const Billing = () => {
             toast.warning(`Warning: Matches expires in ${daysToExpiry} days`);
         }
     };
-
     const updateQty = (id, newQty, maxStock) => {
         if (newQty < 1) return;
         if (newQty > maxStock) {
@@ -108,31 +91,26 @@ const Billing = () => {
         }
         setCart(cart.map(item => item._id === id ? { ...item, buyQty: newQty } : item));
     };
-
     const removeFromCart = (id) => {
         setCart(cart.filter(item => item._id !== id));
     };
-
     const subtotal = cart.reduce((acc, item) => acc + (item.price * item.buyQty), 0);
-    const tax = subtotal * 0.10; // 10% tax example or 0
-    const total = subtotal; // Assuming inclusive or simple calculation for now
-
+    const tax = subtotal * 0.10; 
+    const total = subtotal; 
     const handleCheckout = async () => {
         if (cart.length === 0) return toast.error("Cart is empty");
         if (!customerName) return toast.error("Customer name is required");
-
         setLoading(true);
         try {
             const orderData = {
                 customer_name: customerName,
                 customer_contact: customerContact,
-                payment_status: 'paid', // Instant billing implies paid usually, or use paymentMethod
+                payment_status: 'paid', 
                 items: cart.map(item => ({
                     medicine_id: item._id,
                     quantity: item.buyQty
                 }))
             };
-
             await api.post('/orders', orderData);
             setSuccess(true);
             setTimeout(() => {
@@ -140,10 +118,9 @@ const Billing = () => {
                 setCart([]);
                 setCustomerName('');
                 setCustomerContact('');
-                navigate('/orders'); // Redirect to orders list
+                navigate('/orders'); 
                 toast.success("Bill generated successfully!");
             }, 2000);
-
         } catch (error) {
             console.error("Checkout failed", error);
             toast.error(error.response?.data?.message || "Failed to generate bill");
@@ -151,7 +128,6 @@ const Billing = () => {
             setLoading(false);
         }
     };
-
     if (success) {
         return (
             <div className="min-h-screen bg-indigo-600 flex items-center justify-center">
@@ -165,19 +141,15 @@ const Billing = () => {
             </div>
         );
     }
-
     return (
         <div className="flex bg-gray-50 min-h-screen">
             <Sidebar />
             <div className="ml-64 flex-1 flex flex-col">
                 <Header title="New Sale" />
-
                 <div className="p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-                    {/* Left Panel: Search & Cart */}
+                    {}
                     <div className="lg:col-span-2 space-y-6">
-
-                        {/* Search Bar */}
+                        {}
                         <div className="relative z-20" ref={searchRef}>
                             <div className="relative group">
                                 <Search className="absolute left-4 top-4 text-gray-400 group-focus-within:text-indigo-500 transition-colors" size={20} />
@@ -188,15 +160,13 @@ const Billing = () => {
                                     className="w-full pl-12 pr-4 py-4 bg-white border border-gray-200 rounded-2xl shadow-sm focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-lg"
                                 />
                             </div>
-
-                            {/* Autocomplete Dropdown */}
+                            {}
                             {showSuggestions && suggestions.length > 0 && (
                                 <div className="absolute top-full mt-2 w-full bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden animate-fade-in-up">
                                     <p className="px-4 py-2 bg-gray-50 text-xs font-bold text-gray-400 uppercase">Suggestions</p>
                                     {suggestions.map(med => {
                                         const isExpired = new Date(med.expiry_date) < new Date();
                                         const isExpiringSoon = !isExpired && (new Date(med.expiry_date) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000));
-
                                         return (
                                             <div
                                                 key={med._id}
@@ -226,13 +196,11 @@ const Billing = () => {
                                 </div>
                             )}
                         </div>
-
-                        {/* Cart Items */}
+                        {}
                         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 min-h-[400px]">
                             <h3 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
                                 <Receipt className="text-indigo-500" /> Current Bill
                             </h3>
-
                             {cart.length === 0 ? (
                                 <div className="h-64 flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-100 rounded-2xl">
                                     <div className="bg-gray-50 p-4 rounded-full mb-3">
@@ -248,7 +216,6 @@ const Billing = () => {
                                                 <p className="font-bold text-gray-800 text-lg">{item.name}</p>
                                                 <p className="text-sm text-gray-500">₹{item.price} x {item.buyQty}</p>
                                             </div>
-
                                             <div className="flex items-center gap-6 mt-2 sm:mt-0">
                                                 <div className="flex items-center bg-white border border-gray-200 rounded-xl shadow-sm">
                                                     <button
@@ -261,11 +228,9 @@ const Billing = () => {
                                                         className="px-3 py-1 hover:bg-gray-50 text-gray-600 font-bold rounded-r-xl transition-colors"
                                                     >+</button>
                                                 </div>
-
                                                 <span className="font-bold text-lg w-20 text-right">
                                                     ₹{(item.price * item.buyQty).toFixed(2)}
                                                 </span>
-
                                                 <button
                                                     onClick={() => removeFromCart(item._id)}
                                                     className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
@@ -279,12 +244,10 @@ const Billing = () => {
                             )}
                         </div>
                     </div>
-
-                    {/* Right Panel: Checkout */}
+                    {}
                     <div className="space-y-6">
                         <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-6 sticky top-24">
                             <h3 className="font-bold text-gray-800 text-lg mb-6">Customer Details</h3>
-
                             <div className="space-y-4">
                                 <div className="relative group">
                                     <User className="absolute left-4 top-3.5 text-gray-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
@@ -305,7 +268,6 @@ const Billing = () => {
                                     />
                                 </div>
                             </div>
-
                             <div className="mt-8 border-t border-gray-100 pt-6 space-y-3">
                                 <div className="flex justify-between text-gray-600">
                                     <span>Subtotal</span>
@@ -320,7 +282,6 @@ const Billing = () => {
                                     <span>₹{total.toFixed(2)}</span>
                                 </div>
                             </div>
-
                             <div className="mt-8 grid grid-cols-2 gap-3">
                                 {['cash', 'card'].map(method => (
                                     <button
@@ -337,7 +298,6 @@ const Billing = () => {
                                     </button>
                                 ))}
                             </div>
-
                             <button
                                 onClick={handleCheckout}
                                 disabled={loading || cart.length === 0}
@@ -353,5 +313,4 @@ const Billing = () => {
         </div>
     );
 };
-
 export default Billing;

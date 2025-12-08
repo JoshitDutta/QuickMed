@@ -12,7 +12,6 @@ import {
     ShoppingBag
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
 const Dashboard = () => {
     const [stats, setStats] = useState({
         totalMedicines: 0,
@@ -25,9 +24,7 @@ const Dashboard = () => {
     const [lowStockItems, setLowStockItems] = useState([]);
     const [expiringItems, setExpiringItems] = useState([]);
     const [recentOrders, setRecentOrders] = useState([]);
-
     const navigate = useNavigate();
-
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -36,28 +33,22 @@ const Dashboard = () => {
                     api.get('/medicines?filterLowStock=true&limit=5'),
                     api.get('/orders?limit=5')
                 ]);
-
                 setStats(statsRes.data);
                 setLowStockItems(lowStockRes.data.medicines);
                 setRecentOrders(ordersRes.data.orders);
-
-                // Expiring
                 const today = new Date();
                 const thirtyDays = new Date();
                 thirtyDays.setDate(today.getDate() + 30);
                 const expiryRes = await api.get(`/medicines?expiryStart=${today.toISOString()}&expiryEnd=${thirtyDays.toISOString()}&limit=5`);
                 setExpiringItems(expiryRes.data.medicines);
-
             } catch (error) {
                 console.error("Error loading dashboard data", error);
             } finally {
                 setLoading(false);
             }
         };
-
         fetchData();
     }, []);
-
     if (loading) {
         return (
             <div className="flex bg-gray-50 h-screen">
@@ -68,15 +59,13 @@ const Dashboard = () => {
             </div>
         );
     }
-
     return (
         <div className="flex bg-gray-50 min-h-screen">
             <Sidebar />
             <div className="ml-64 flex-1 flex flex-col">
                 <Header title="Dashboard Overview" />
-
                 <div className="p-8">
-                    {/* Stats Grid */}
+                    {}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                         <StatsCard
                             title="Total Medicines"
@@ -109,9 +98,8 @@ const Dashboard = () => {
                             onClick={() => navigate('/orders?filterMonth=current')}
                         />
                     </div>
-
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        {/* Recent Orders - Spans 2 cols */}
+                        {}
                         <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                             <div className="flex items-center justify-between mb-6">
                                 <div className="flex items-center gap-3">
@@ -122,7 +110,6 @@ const Dashboard = () => {
                                 </div>
                                 <button onClick={() => navigate('/orders')} className="text-sm text-indigo-600 hover:underline">View All</button>
                             </div>
-
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left">
                                     <thead className="bg-gray-50/50">
@@ -158,10 +145,9 @@ const Dashboard = () => {
                                 </table>
                             </div>
                         </div>
-
-                        {/* Alerts Column */}
+                        {}
                         <div className="space-y-6">
-                            {/* Low Stock */}
+                            {}
                             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                                 <div className="flex items-center gap-3 mb-4">
                                     <div className="bg-red-50 p-2 rounded-lg">
@@ -182,8 +168,7 @@ const Dashboard = () => {
                                     ) : (<p className="text-sm text-gray-400">Inventory looks good.</p>)}
                                 </div>
                             </div>
-
-                            {/* Expiring Soon */}
+                            {}
                             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                                 <div className="flex items-center gap-3 mb-4">
                                     <div className="bg-orange-50 p-2 rounded-lg">
@@ -211,5 +196,4 @@ const Dashboard = () => {
         </div>
     );
 };
-
 export default Dashboard;

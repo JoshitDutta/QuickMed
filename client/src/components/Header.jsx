@@ -3,7 +3,6 @@ import { useAuth } from '../context/AuthContext';
 import { Bell, Search, User, LogOut, ChevronDown, AlertTriangle, Calendar, Activity, Tag, ShoppingBag, Truck } from 'lucide-react';
 import api from '../api/axios';
 import { useNavigate } from 'react-router-dom';
-
 const Header = ({ title }) => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
@@ -15,8 +14,6 @@ const Header = ({ title }) => {
     const [isSearching, setIsSearching] = useState(false);
     const [showSearchDropdown, setShowSearchDropdown] = useState(false);
     const searchRef = useRef(null);
-
-    // Close dropdowns on click outside
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (notificationRef.current && !notificationRef.current.contains(event.target)) {
@@ -29,12 +26,9 @@ const Header = ({ title }) => {
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
-
-    // Fetch Alerts
     useEffect(() => {
         const fetchAlerts = async () => {
             try {
-                // Parallel fetch for efficiency
                 const [lowStockRes, expiringRes] = await Promise.all([
                     api.get('/medicines?filterLowStock=true&limit=10'),
                     api.get(`/medicines?expiryStart=${new Date().toISOString()}&expiryEnd=${new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()}&limit=10`)
@@ -49,10 +43,7 @@ const Header = ({ title }) => {
         };
         fetchAlerts();
     }, []);
-
     const totalAlerts = alerts.lowStock.length + alerts.expiring.length;
-
-    // Global Search Logic
     useEffect(() => {
         const delayDebounceFn = setTimeout(async () => {
             if (searchQuery.length >= 2) {
@@ -63,7 +54,6 @@ const Header = ({ title }) => {
                         api.get(`/medicines?search=${searchQuery}&limit=3`),
                         api.get(`/orders?search=${searchQuery}&limit=3`)
                     ]);
-
                     setSearchResults({
                         medicines: medsRes.data.medicines || [],
                         orders: ordersRes.data.orders || []
@@ -78,17 +68,14 @@ const Header = ({ title }) => {
                 setShowSearchDropdown(false);
             }
         }, 300);
-
         return () => clearTimeout(delayDebounceFn);
     }, [searchQuery]);
-
     const handleSearchResultClick = (type, item) => {
         setSearchQuery('');
         setShowSearchDropdown(false);
-
         switch (type) {
             case 'medicine':
-                navigate(`/inventory?search=${item.name}`); // Pass search param to inventory
+                navigate(`/inventory?search=${item.name}`); 
                 break;
             case 'order':
                 navigate(`/orders?search=${item.order_id || item.customer_name}`);
@@ -97,12 +84,10 @@ const Header = ({ title }) => {
                 break;
         }
     };
-
     const handleLogout = () => {
         logout();
         navigate('/login');
     };
-
     const handleAlertClick = (type) => {
         setNotificationsOpen(false);
         if (type === 'lowStock') {
@@ -111,15 +96,13 @@ const Header = ({ title }) => {
             navigate('/inventory');
         }
     };
-
     return (
         <header className="flex justify-between items-center bg-white p-6 shadow-sm border-b border-gray-100 z-20 relative">
             <div>
                 <h1 className="text-2xl font-bold text-gray-800">{title}</h1>
             </div>
-
             <div className="flex items-center gap-6">
-                {/* Global Search Bar */}
+                {}
                 <div className="hidden md:flex relative items-center" ref={searchRef}>
                     <Search className="absolute left-3 text-gray-400" size={18} />
                     <input
@@ -130,15 +113,14 @@ const Header = ({ title }) => {
                         onFocus={() => searchQuery.length >= 2 && setShowSearchDropdown(true)}
                         className="pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500 w-80 transition-all shadow-sm focus:shadow-md"
                     />
-
-                    {/* Search Dropdown */}
+                    {}
                     {showSearchDropdown && (
                         <div className="absolute top-12 left-0 w-80 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50 animate-fade-in-up">
                             {isSearching ? (
                                 <div className="p-4 text-center text-gray-400 text-xs">Searching...</div>
                             ) : (
                                 <>
-                                    {/* Medicines */}
+                                    {}
                                     {searchResults.medicines.length > 0 && (
                                         <div className="p-2">
                                             <p className="px-2 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Inventory</p>
@@ -159,8 +141,7 @@ const Header = ({ title }) => {
                                             ))}
                                         </div>
                                     )}
-
-                                    {/* Orders */}
+                                    {}
                                     {searchResults.orders.length > 0 && (
                                         <div className="p-2 border-t border-gray-50">
                                             <p className="px-2 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Orders</p>
@@ -181,9 +162,7 @@ const Header = ({ title }) => {
                                             ))}
                                         </div>
                                     )}
-
-
-                                    {/* No Results */}
+                                    {}
                                     {Object.values(searchResults).every(arr => arr.length === 0) && (
                                         <div className="p-4 text-center text-gray-400 text-xs">
                                             No results found.
@@ -194,8 +173,7 @@ const Header = ({ title }) => {
                         </div>
                     )}
                 </div>
-
-                {/* Notifications */}
+                {}
                 <div className="relative" ref={notificationRef}>
                     <button
                         onClick={() => setNotificationsOpen(!notificationsOpen)}
@@ -209,15 +187,13 @@ const Header = ({ title }) => {
                             </span>
                         )}
                     </button>
-
-                    {/* Dropdown Panel */}
+                    {}
                     {notificationsOpen && (
                         <div className="absolute right-0 mt-4 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50 animate-fade-in-up origin-top-right">
                             <div className="px-5 py-4 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
                                 <h3 className="font-bold text-gray-800">Notifications</h3>
                                 <span className="text-xs font-medium bg-red-100 text-red-600 px-2 py-0.5 rounded-full">{totalAlerts} New</span>
                             </div>
-
                             <div className="max-h-80 overflow-y-auto custom-scrollbar">
                                 {totalAlerts === 0 ? (
                                     <div className="p-8 text-center text-gray-400 text-sm">
@@ -226,7 +202,7 @@ const Header = ({ title }) => {
                                     </div>
                                 ) : (
                                     <>
-                                        {/* Low Stock Section */}
+                                        {}
                                         {alerts.lowStock.length > 0 && (
                                             <div className="p-2">
                                                 <p className="px-3 py-1 text-xs font-bold text-gray-400 uppercase">Low Stock</p>
@@ -243,8 +219,7 @@ const Header = ({ title }) => {
                                                 ))}
                                             </div>
                                         )}
-
-                                        {/* Expiring Section */}
+                                        {}
                                         {alerts.expiring.length > 0 && (
                                             <div className="p-2 border-t border-gray-50">
                                                 <p className="px-3 py-1 text-xs font-bold text-gray-400 uppercase">Expiring Soon</p>
@@ -267,8 +242,7 @@ const Header = ({ title }) => {
                         </div>
                     )}
                 </div>
-
-                {/* User Profile */}
+                {}
                 <div className="flex items-center gap-3 pl-6 border-l border-gray-100">
                     <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 text-white flex items-center justify-center font-bold shadow-md shadow-indigo-100">
                         {user?.username?.[0]?.toUpperCase() || 'U'}
@@ -282,5 +256,4 @@ const Header = ({ title }) => {
         </header>
     );
 };
-
 export default Header;

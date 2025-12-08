@@ -10,7 +10,6 @@ import PrivateRoute from './components/PrivateRoute';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import ErrorBoundary from './components/ErrorBoundary';
-
 function App() {
   return (
     <ErrorBoundary>
@@ -34,5 +33,4 @@ function App() {
     </ErrorBoundary>
   );
 }
-
 export default App;

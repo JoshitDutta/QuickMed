@@ -1,5 +1,4 @@
 import React from 'react';
-
 const Skeleton = ({ className, ...props }) => {
     return (
         <div
@@ -8,5 +7,4 @@ const Skeleton = ({ className, ...props }) => {
         />
     );
 };
-
 export default Skeleton;

@@ -10,24 +10,19 @@ import {
     HeartPulse
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-
 const Sidebar = () => {
     const { logout, user } = useAuth();
     const navigate = useNavigate();
-
     const handleLogout = () => {
         logout();
         navigate('/login');
     };
-
     const navItems = [
         { path: '/dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
         { path: '/inventory', label: 'Inventory', icon: <Package size={20} /> },
         { path: '/orders', label: 'Orders', icon: <ShoppingCart size={20} /> },
         { path: '/billing', label: 'Billing', icon: <Receipt size={20} /> },
-
     ];
-
     return (
         <div className="w-64 bg-white border-r border-gray-100 flex flex-col h-screen fixed left-0 top-0 z-10 shadow-sm">
             <div className="p-6 flex items-center space-x-3 border-b border-gray-50">
@@ -41,7 +36,6 @@ const Sidebar = () => {
                     <p className="text-xs text-gray-400 font-medium">Pharmacy System</p>
                 </div>
             </div>
-
             <nav className="flex-1 px-4 py-6 space-y-2">
                 {navItems.map((item) => (
                     <NavLink
@@ -61,7 +55,6 @@ const Sidebar = () => {
                     </NavLink>
                 ))}
             </nav>
-
             <div className="p-4 border-t border-gray-50 bg-gray-50/50">
                 <div className="flex items-center space-x-3 mb-4 px-2">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-400 to-pink-400 flex items-center justify-center text-white font-bold shadow-sm">
@@ -83,5 +76,4 @@ const Sidebar = () => {
         </div>
     );
 };
-
 export default Sidebar;

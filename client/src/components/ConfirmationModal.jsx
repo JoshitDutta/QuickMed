@@ -1,6 +1,5 @@
 import React from 'react';
 import { X, AlertTriangle, Trash2 } from 'lucide-react';
-
 const ConfirmationModal = ({
     isOpen,
     onClose,
@@ -12,12 +11,10 @@ const ConfirmationModal = ({
     isDangerous = false
 }) => {
     if (!isOpen) return null;
-
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform transition-all scale-100 opacity-100">
-
-                {/* Header */}
+                {}
                 <div className={`px-6 py-4 flex items-center justify-between border-b ${isDangerous ? 'bg-red-50 border-red-100' : 'bg-gray-50 border-gray-100'}`}>
                     <div className="flex items-center gap-3">
                         {isDangerous && (
@@ -36,15 +33,13 @@ const ConfirmationModal = ({
                         <X size={20} />
                     </button>
                 </div>
-
-                {/* Body */}
+                {}
                 <div className="p-6">
                     <p className="text-gray-600 leading-relaxed">
                         {message}
                     </p>
                 </div>
-
-                {/* Footer */}
+                {}
                 <div className="px-6 py-4 bg-gray-50 flex gap-3 justify-end border-t border-gray-100">
                     <button
                         onClick={onClose}
@@ -67,5 +62,4 @@ const ConfirmationModal = ({
         </div>
     );
 };
-
 export default ConfirmationModal;
