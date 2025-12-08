@@ -17,7 +17,8 @@ app.use(morgan('dev'));
 
 // CORS Configuration
 app.use(cors({
-    origin: process.env.CLIENT_URL || '*', // Allow all for dev, restrict in prod
+    origin: process.env.CLIENT_URL || 'http://localhost:5173', // Allow all for dev, restrict in prod
+    credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));

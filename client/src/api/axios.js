@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create instance
 const api = axios.create({
-    baseURL: 'http://localhost:5002/api' // Adjust if deployment URL differs
+    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5002/api' // Fallback to localhost
 });
 
 // Request Interceptor: Attach Token
