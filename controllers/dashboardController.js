@@ -3,18 +3,16 @@ const Order = require('../models/Order');
 
 exports.getStats = async (req, res) => {
     try {
-        const isAdmin = req.user.role === 'admin';
+        const userId = req.user.id;
 
-        // Base query for medicines (Admins see all, Staff see their own)
-        const medicineQuery = { isDeleted: false };
-        if (!isAdmin) {
-            medicineQuery.user_id = req.user.id;
-        }
-
-        const totalMedicines = await Medicine.countDocuments(medicineQuery);
+        const totalMedicines = await Medicine.countDocuments({
+            isDeleted: false,
+            user_id: userId
+        });
 
         const lowStockCount = await Medicine.countDocuments({
-            ...medicineQuery,
+            isDeleted: false,
+            user_id: userId,
             $expr: { $lte: ['$quantity', '$reorder_level'] }
         });
 
@@ -22,7 +20,8 @@ exports.getStats = async (req, res) => {
         thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
 
         const expiringSoonCount = await Medicine.countDocuments({
-            ...medicineQuery,
+            isDeleted: false,
+            user_id: userId,
             expiry_date: { $gte: new Date(), $lte: thirtyDaysFromNow }
         });
 
@@ -31,17 +30,10 @@ exports.getStats = async (req, res) => {
         const endOfDay = new Date();
         endOfDay.setHours(23, 59, 59, 999);
 
-        // Base match for orders (Admins see all paid orders, Staff see their own)
-        const orderMatch = {
-            payment_status: 'paid'
-        };
-        if (!isAdmin) {
-            orderMatch.staff_id = req.user.id;
-        }
-
         const matchToday = {
-            ...orderMatch,
-            createdAt: { $gte: startOfDay, $lte: endOfDay }
+            createdAt: { $gte: startOfDay, $lte: endOfDay },
+            payment_status: 'paid',
+            staff_id: userId
         };
 
         const todaysSalesData = await Order.aggregate([
@@ -55,8 +47,9 @@ exports.getStats = async (req, res) => {
         startOfMonth.setHours(0, 0, 0, 0);
 
         const matchMonth = {
-            ...orderMatch,
-            createdAt: { $gte: startOfMonth }
+            createdAt: { $gte: startOfMonth },
+            payment_status: 'paid',
+            staff_id: userId
         };
 
         const monthlyRevenueData = await Order.aggregate([
