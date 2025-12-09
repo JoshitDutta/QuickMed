@@ -14,7 +14,7 @@ export const AuthProvider = ({ children }) => {
             const { token: newToken, user: newUser } = response.data;
             setTokenState(newToken);
             setUser(newUser);
-            setAuthToken(newToken); 
+            setAuthToken(newToken);
             return true;
         } catch (err) {
             console.error(err);

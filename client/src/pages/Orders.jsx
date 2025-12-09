@@ -70,6 +70,23 @@ const Orders = () => {
             setLoading(false);
         }
     };
+
+    const handleStatusUpdate = async (newStatus) => {
+        if (!selectedOrder) return;
+
+        try {
+            const res = await api.put(`/orders/${selectedOrder._id}`, {
+                payment_status: newStatus
+            });
+
+            setOrders(orders.map(o => o._id === selectedOrder._id ? res.data : o));
+            setSelectedOrder(res.data);
+            toast.success(`Order status updated to ${newStatus}`);
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to update status");
+        }
+    };
     const handleViewOrder = (order) => {
         setSelectedOrder(order);
         setIsModalOpen(true);
@@ -90,7 +107,7 @@ const Orders = () => {
             <div className="ml-64 flex-1 flex flex-col">
                 <Header title="Orders History" />
                 <div className="p-8 flex-1">
-                    {}
+                    { }
                     <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div className="relative col-span-1 md:col-span-2">
                             <Search className="absolute left-3 top-3 text-gray-400" size={18} />
@@ -129,7 +146,7 @@ const Orders = () => {
                             />
                         </div>
                     </div>
-                    {}
+                    { }
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                         <table className="w-full text-left">
                             <thead className="bg-gray-50/50 border-b border-gray-100">
@@ -192,7 +209,7 @@ const Orders = () => {
                             </tbody>
                         </table>
                     </div>
-                    {}
+                    { }
                     <div className="mt-6 flex justify-between items-center">
                         <p className="text-sm text-gray-500">Page {page} of {totalPages}</p>
                         <div className="flex gap-2">
@@ -213,11 +230,11 @@ const Orders = () => {
                         </div>
                     </div>
                 </div>
-                {}
+                { }
                 {isModalOpen && selectedOrder && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
                         <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden max-h-[90vh] flex flex-col animate-scale-up">
-                            {}
+                            { }
                             <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                                 <div>
                                     <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Order Details</p>
@@ -230,7 +247,7 @@ const Orders = () => {
                                     <span className="text-xl">&times;</span>
                                 </button>
                             </div>
-                            {}
+                            { }
                             <div className="p-6 overflow-y-auto custom-scrollbar">
                                 <div className="grid grid-cols-2 gap-6 mb-8">
                                     <div className="p-4 bg-indigo-50 rounded-2xl">
@@ -240,11 +257,19 @@ const Orders = () => {
                                     </div>
                                     <div className="p-4 bg-gray-50 rounded-2xl">
                                         <p className="text-xs text-gray-400 font-bold uppercase mb-1">Status</p>
-                                        <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold
-                                            ${selectedOrder.payment_status === 'paid' ? 'bg-green-100 text-green-600' : 'bg-amber-100 text-amber-600'}
-                                        `}>
-                                            {selectedOrder.payment_status.toUpperCase()}
-                                        </span>
+                                        <select
+                                            value={selectedOrder.payment_status}
+                                            onChange={(e) => handleStatusUpdate(e.target.value)}
+                                            className={`inline-block px-3 py-1 rounded-full text-xs font-bold border-none outline-none cursor-pointer
+                                                ${selectedOrder.payment_status === 'paid' ? 'bg-green-100 text-green-600' :
+                                                    selectedOrder.payment_status === 'pending' ? 'bg-amber-100 text-amber-600' :
+                                                        'bg-red-100 text-red-600'}
+                                            `}
+                                        >
+                                            <option value="pending">PENDING</option>
+                                            <option value="paid">PAID</option>
+                                            <option value="cancelled">CANCELLED</option>
+                                        </select>
                                         <p className="text-xs text-gray-400 mt-2">
                                             {new Date(selectedOrder.createdAt).toLocaleString()}
                                         </p>
